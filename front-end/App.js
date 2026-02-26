@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, FlatList, SafeAreaView, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 
-const API_URL = 'http://10.0.2.2:3333'; // 10.0.2.2 is the localhost alias for Android Emulator. Change to your local IP for physical devices.
+const API_URL = 'https://projetobeta.onrender.com';
 
 // Mascot Helper Function
 const getMascotAscii = (physicalExp, mentalExp, petHealth) => {
@@ -24,7 +24,7 @@ export default function App() {
       // Change this to output fetch correctly depending on emulator or web
       // Since it's expo web/android, we use a generic fetch. (Localhost vs 10.0.2.2 usually creates issues, so using 127.0.0.1 for Web or your PC's IP)
       // I'll try localhost first, which works for web. 
-      const response = await fetch('http://localhost:3333/leaderboard').catch(() => fetch('http://10.0.2.2:3333/leaderboard'));
+      const response = await fetch('https://projetobeta.onrender.com/leaderboard');
       const data = await response.json();
       setUsers(data);
     } catch (error) {
