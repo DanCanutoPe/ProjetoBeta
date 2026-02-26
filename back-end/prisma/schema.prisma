@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String  @id @default(uuid())
+  name     String
+  email    String  @unique
+  password String
+  bio      String?
+
+  // Gamification Fields
+  totalPoints   Int @default(0)
+  physicalExp   Int @default(0)
+  mentalExp     Int @default(0)
+  currentStreak Int @default(0)
+  highestStreak Int @default(0)
+  petHealth     Int @default(100) // 0 to 100
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  activities     Activity[]
+  groups         GroupMember[]
+  tauntsSent     Taunt[]       @relation("TauntSender")
+  tauntsReceived Taunt[]       @relation("TauntReceiver")
+}
+
+model Group {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members    GroupMember[]
+  activities Activity[]
+  quests     GroupQuest[]
+}
+
+model GroupMember {
+  id       String   @id @default(uuid())
+  role     String   @default("MEMBER") // ADMIN, MEMBER
+  joinedAt DateTime @default(now())
+
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  groupId String
+  group   Group  @relation(fields: [groupId], references: [id])
+
+  @@unique([userId, groupId])
+}
+
+// "Activity" replaces the old "Workout" to include mental exercises
+model Activity {
+  id           String @id @default(uuid())
+  title        String
+  type         String // e.g., "PHYSICAL", "MENTAL", "WELLNESS"
+  duration     Int? // duration in minutes
+  pointsEarned Int    @default(0)
+
+  proofImageUrl String? // Photo of the chess match or gym
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  groupId String?
+  group   Group?  @relation(fields: [groupId], references: [id])
+}
+
+// The core "Trash-Talk" system
+model Taunt {
+  id        String   @id @default(uuid())
+  message   String
+  createdAt DateTime @default(now())
+
+  senderId String
+  sender   User   @relation("TauntSender", fields: [senderId], references: [id])
+
+  receiverId String
+  receiver   User   @relation("TauntReceiver", fields: [receiverId], references: [id])
+}
+
+// The "Group Boss" concept
+model GroupQuest {
+  id            String   @id @default(uuid())
+  title         String   @default("Monstro da Preguiça")
+  targetHp      Int
+  currentDamage Int      @default(0)
+  deadline      DateTime
+  createdAt     DateTime @default(now())
+  completed     Boolean  @default(false)
+
+  groupId String
+  group   Group  @relation(fields: [groupId], references: [id])
+}
